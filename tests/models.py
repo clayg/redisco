@@ -212,7 +212,7 @@ class ModelTestCase(RediscoTestCase):
                     .exclude(last_name="Mommy"))
         self.assertEqual(3, len(persons))
 
-    
+
     def test_first(self):
         Person.objects.create(first_name="Granny", last_name="Goose")
         Person.objects.create(first_name="Clark", last_name="Kent")
@@ -515,6 +515,20 @@ class ModelTestCase(RediscoTestCase):
         self.assertEqual('7', p.id)
 
 
+    def test_customizable_key(self):
+        class Person(models.Model):
+            name = models.CharField()
+
+            class Meta:
+                key = 'People'
+
+        p = Person(name="Clark Kent")
+        self.assert_(p.is_valid())
+        self.assert_(p.save())
+
+        self.assert_('1' in self.client.smembers('People:all'))
+
+
 class Event(models.Model):
     name = models.CharField(required=True)
     date = models.DateField(required=True)
@@ -769,13 +783,32 @@ class ReferenceFieldTestCase(RediscoTestCase):
         Character.objects.create(n=34, m='c', word=word)
         Character.objects.create(n=34, m='d')
         for char in Character.objects.all():
-            self.assertEqual(word, char.word)
+            if char.m != 'd':
+                self.assertEqual(word, char.word)
+            else:
+                self.assertEqual(None, char.word)
         a, b, c, d = list(Character.objects.all())
         self.assertTrue(a in word.character_set)
         self.assertTrue(b in word.character_set)
         self.assertTrue(c in word.character_set)
         self.assertTrue(d not in word.character_set)
         self.assertEqual(3, len(word.character_set))
+
+    def test_reference(self):
+        class Department(models.Model):
+            name = models.Attribute(required=True)
+
+        class Person(models.Model):
+            name = models.Attribute(required=True)
+            manager = models.ReferenceField('Person', related_name='underlings')
+            department = models.ReferenceField(Department)
+
+        d1 = Department.objects.create(name='Accounting')
+        d2 = Department.objects.create(name='Billing')
+        p1 = Person.objects.create(name='Joe', department=d1)
+        p2 = Person.objects.create(name='Jack', department=d2)
+        self.assertEqual(p1.department_id, p1.department.id)
+        self.assertEqual(p2.department_id, p2.department.id)
 
     def test_lazy_reference_field(self):
         class User(models.Model):

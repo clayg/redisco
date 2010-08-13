@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import os
 
-version = '0.1.dev21'
+version = '0.1.1'
 
 try:
     from setuptools import setup
@@ -26,7 +26,7 @@ setup(name='redisco',
       packages=['redisco', 'redisco.models'],
       test_suite='tests.all_tests',
       classifiers=[
-        'Development Status :: 3 - Alpha',
+        'Development Status :: 4 - Beta',
         'Environment :: Console',
         'Intended Audience :: Developers',
         'License :: OSI Approved :: MIT License',

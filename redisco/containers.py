@@ -290,8 +290,7 @@ class List(Container):
         self.ltrim(start, end)
 
     def __iter__(self):
-        for i in xrange(len(self)):
-            yield self[i]
+        return self.members.__iter__()
 
     def __repr__(self):
         return "<%s '%s' %s>" % (self.__class__.__name__, self.key,

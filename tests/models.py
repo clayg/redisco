@@ -358,6 +358,20 @@ class ModelTestCase(RediscoTestCase):
         self.assertFalse(p.is_valid())
         self.assertTrue(('name', 'required') in p.errors)
 
+    def test_errors(self):
+        class Person(models.Model):
+            name = models.CharField(required=True, unique=True)
+        p = Person.objects.create(name="Chuck")
+        self.assertFalse(p.errors)
+
+        p = Person(name="John")
+        self.assertFalse(p.errors)
+        p.name = "Chuck" # name should be unique
+        # this doesn't work:
+        #self.assertEquals(not p.errors, p.is_valid())
+        # but this works:
+        self.assertEqual(p.is_valid(), not p.errors)
+
     def test_custom_validation(self):
         class Ninja(models.Model):
             def validator(field_name, age):
